@@ -1,0 +1,21 @@
+name: Build artifact and push docker image
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  build-node-artifact:
+    name: Build node artifact
+    uses: ./.github/workflows/_build-node-artifact.yml
+    secrets: inherit
+  build-docker-image:
+    needs: ['build-node-artifact']
+    name: Build node artifact
+    uses: ./.github/workflows/_build-node-artifact.yml
+    secrets: inherit

@@ -1,8 +1,7 @@
-name: Build node binary
+name: _Build node binary
 
 on:
-  pull_request:
-  workflow_dispatch:
+  workflow_call:
 
 jobs:
   build-artifact:
@@ -19,6 +18,9 @@ jobs:
       - name: Get branch name and commit SHA
         id: get-branch
         uses: ./.github/actions/get-branch
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v1

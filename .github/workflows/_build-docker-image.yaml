@@ -1,0 +1,44 @@
+name: _Build docker image
+
+on:
+  workflow_call:
+
+jobs:
+  build-docker-image:
+    runs-on: ubuntu-20.04
+    env:
+      VAR_NODE_REGISTRY: ${{ vars.NODE_REGISTRY }}
+      SECRET_NODE_REGISTRY_USERNAME: ${{ secrets.NODE_REGISTRY_USER }}
+      SECRET_NODE_REGISTRY_PASSWORD: ${{ secrets.NODE_REGISTRY_PASS }}
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2.5.0
+
+      - name: Get branch name and commit SHA
+        id: get-branch
+        uses: ./.github/actions/get-branch
+
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node
+          path: target/release/node-template
+
+      - name: Build docker image
+        run: |
+          chmod +x target/release/node-template
+          docker build --tag node-template:{{ steps.get-branch.outputs.sha_short }} -f docker/Dockerfile .
+
+      - name: Login to docker registry
+        if: env.VAR_NODE_REGISTRY != '' && env.SECRET_NODE_REGISTRY_USERNAME != '' && env.SECRET_NODE_REGISTRY_PASSWORD != ''
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ vars.NODE_REGISTRY }}
+          username: ${{ secrets.SECRET_NODE_REGISTRY_USERNAME }}
+          password: ${{ secrets.SECRET_NODE_REGISTRY_PASSWORD }}
+
+      - name: Push docker image to the repository
+        if: env.VAR_NODE_REGISTRY != '' && env.SECRET_NODE_REGISTRY_USERNAME != '' && env.SECRET_NODE_REGISTRY_PASSWORD != ''
+        run: |
+          docker tag node-template:{{ steps.get-branch.outputs.sha_short }} ${{ vars.NODE_REGISTRY }}:{{ steps.get-branch.outputs.sha_short }}
+          docker push ${{ vars.NODE_REGISTRY }}:{{ steps.get-branch.outputs.sha_short }}
