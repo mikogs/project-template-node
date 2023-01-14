@@ -1,2 +1,3 @@
 # project-template-node
-Sample substrate based node
+
+Taken from Substrate Node Template.
