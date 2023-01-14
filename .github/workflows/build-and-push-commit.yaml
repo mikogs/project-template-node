@@ -2,7 +2,6 @@ name: Build artifact and push docker image
 
 on:
   pull_request:
-  push:
   workflow_dispatch:
 
 concurrency:
