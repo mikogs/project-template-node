@@ -12,10 +12,10 @@ concurrency:
 jobs:
   build-node-artifact:
     name: Build node artifact
-    uses: ./.github/workflows/_build-node-artifact.yml
+    uses: ./.github/workflows/_build-node-artifact.yaml
     secrets: inherit
   build-docker-image:
     needs: ['build-node-artifact']
     name: Build node artifact
-    uses: ./.github/workflows/_build-node-artifact.yml
+    uses: ./.github/workflows/_build-node-artifact.yaml
     secrets: inherit
