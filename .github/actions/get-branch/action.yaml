@@ -1,0 +1,22 @@
+name: Get branch details
+description: Returns branch name and commit SHA
+
+outputs:
+  branch_name:
+    description: Branch name
+    value: ${{ steps.get_branch.outputs.branch_name }}
+  sha_short:
+    description: Commit short SHA
+    value: ${{ steps.get_branch.outputs.sha_short }}
+
+runs:
+  using: composite
+  steps:
+    - name: Get branch name and commit SHA
+      id: get_branch
+      shell: bash
+      env:
+        HEAD_REF: ${{ github.head_ref || github.ref }}
+      run: |
+        echo "branch_name=$(echo ${HEAD_REF#refs/heads/} | tr / -)" >> $GITHUB_OUTPUT
+        echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
