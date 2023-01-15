@@ -13,6 +13,7 @@ concurrency:
 
 jobs:
   push-version-tag:
+    name: Tag docker image with version
     runs-on: ubuntu-22.04
     env:
       VAR_NODE_REGISTRY: ${{ vars.NODE_REGISTRY }}
