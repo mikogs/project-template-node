@@ -13,12 +13,15 @@ jobs:
     name: Run unit tests
     uses: ./.github/workflows/_run-unit-tests.yaml
     secrets: inherit
+
   build-node-artifact:
+    needs: ['run-unit-tests']
     name: Build node artifact
     uses: ./.github/workflows/_build-node-artifact.yaml
     secrets: inherit
+
   build-docker-image:
     needs: ['build-node-artifact']
     name: Build node artifact
-    uses: ./.github/workflows/_build-node-artifact.yaml
+    uses: ./.github/workflows/_build-docker-image.yaml
     secrets: inherit
