@@ -19,16 +19,19 @@ jobs:
         id: get-branch
         uses: ./.github/actions/get-branch
 
+
       - name: Download artifact
         uses: actions/download-artifact@v2
         with:
           name: node
           path: target/release/node
 
+
       - name: Build docker image
         run: |
           chmod +x target/release/node
           docker build --tag node:${{ steps.get-branch.outputs.sha_short }} -f docker/Dockerfile .
+
 
       - name: Login to docker registry
         if: env.VAR_NODE_REPOSITORY != '' && env.SECRET_NODE_REGISTRY_USERNAME != '' && env.SECRET_NODE_REGISTRY_PASSWORD != ''

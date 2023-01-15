@@ -21,11 +21,13 @@ jobs:
         id: get-branch
         uses: ./.github/actions/get-branch
 
+
       - name: Check if CI_GITHUB_TOKEN is set
         if: env.SECRET_CI_GITHUB_TOKEN == ''
         run: |
           echo "CI_GITHUB_TOKEN secret is required for this workflow to run"
           exit 1
+
 
       - name: Check if commit status is 'success'
         shell: bash
@@ -38,6 +40,7 @@ jobs:
           cat status_output
           cat status_output | grep 'success'
 
+
       - name: Check if artifact SFTP details are set
         if: env.SECRET_ARTIFACT_SFTP_HOST == '' || env.SECRET_ARTIFACT_SFTP_USERNAME == '' || env.SECRET_ARTIFACT_SFTP_PASSWORD == ''
         run: |
@@ -49,6 +52,7 @@ jobs:
           sudo apt-get install -y sshpass
           sshpass -p "${{ secrets.ARTIFACT_SFTP_PASSWORD }}" \
             scp -o StrictHostKeyChecking=no ${{ secrets.ARTIFACT_SFTP_USERNAME }}@${{ secrets.ARTIFACT_SFTP_HOST }}:/home/${{ secrets.ARTIFACT_SFTP_USERNAME }}/node-${{ steps.get-branch.outputs.sha_short }} node
+
 
       - name: Attach artifact to release
         uses: softprops/action-gh-release@v1
