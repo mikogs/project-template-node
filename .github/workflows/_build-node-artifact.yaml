@@ -19,20 +19,6 @@ jobs:
         id: get-branch
         uses: ./.github/actions/get-branch
 
-      - name: Install Rust toolchain
-        run: |
-          rustup toolchain install nightly
-          rustup component add rust-src --toolchain nightly
-          rustup default nightly
-
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v1
-        with:
-          version: '3.6.1'
-
-      - name: Install WASM target
-        run: rustup target add wasm32-unknown-unknown
-
       - name: Build binary
         run: cargo build --release
 
@@ -40,7 +26,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: node
-          path: target/release/node-template
+          path: target/release/node
           if-no-files-found: error
           retention-days: 7
 
@@ -57,9 +43,9 @@ jobs:
         shell: bash
         env:
           BINARY_DIR: target/release
-          BINARY_FILE: node-template
+          BINARY_FILE: node
           S3BUCKET_URL: s3://${{ secrets.ARTIFACT_S3BUCKET_NAME }}/builds/node/commits/${{ steps.get-branch.outputs.sha_short }}/node-template
-          S3BUCKET_FILE: node-template-${{ steps.get-branch.outputs.sha_short }}.tar.gz
+          S3BUCKET_FILE: node-${{ steps.get-branch.outputs.sha_short }}.tar.gz
         run: |
           tar -cvzf ${{ env.S3BUCKET_FILE }} -C ${{ env.BINARY_DIR }} ${{ env.BINARY_FILE }}
           aws s3 cp ${{ env.S3BUCKET_FILE }} ${{ env.S3BUCKET_URL }}/${{ env.S3BUCKET_FILE }}

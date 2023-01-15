@@ -22,12 +22,12 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: node
-          path: target/release/node-template
+          path: target/release/node
 
       - name: Build docker image
         run: |
-          chmod +x target/release/node-template
-          docker build --tag node-template:{{ steps.get-branch.outputs.sha_short }} -f docker/Dockerfile .
+          chmod +x target/release/node
+          docker build --tag node:{{ steps.get-branch.outputs.sha_short }} -f docker/Dockerfile .
 
       - name: Login to docker registry
         if: env.VAR_NODE_REGISTRY != '' && env.SECRET_NODE_REGISTRY_USERNAME != '' && env.SECRET_NODE_REGISTRY_PASSWORD != ''
@@ -40,5 +40,5 @@ jobs:
       - name: Push docker image to the repository
         if: env.VAR_NODE_REGISTRY != '' && env.SECRET_NODE_REGISTRY_USERNAME != '' && env.SECRET_NODE_REGISTRY_PASSWORD != ''
         run: |
-          docker tag node-template:{{ steps.get-branch.outputs.sha_short }} ${{ vars.NODE_REGISTRY }}:{{ steps.get-branch.outputs.sha_short }}
+          docker tag node:{{ steps.get-branch.outputs.sha_short }} ${{ vars.NODE_REGISTRY }}:{{ steps.get-branch.outputs.sha_short }}
           docker push ${{ vars.NODE_REGISTRY }}:{{ steps.get-branch.outputs.sha_short }}

@@ -14,17 +14,6 @@ jobs:
         id: get-branch
         uses: ./.github/actions/get-branch
 
-      - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
-
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v1
-        with:
-          version: '3.6.1'
-
-      - name: Install WASM target
-        run: rustup target add wasm32-unknown-unknown
-
       - name: Run unit tests
         run: |
           echo "Running unit tests"

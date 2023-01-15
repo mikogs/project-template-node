@@ -1,8 +1,5 @@
-[workspace]
-members = [
-    "node",
-    "pallets/template",
-    "runtime",
-]
-[profile.release]
-panic = "unwind"
+[package]
+name = "node"
+version = "0.1.0"
+
+[dependencies]
