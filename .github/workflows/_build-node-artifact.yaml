@@ -43,7 +43,7 @@ jobs:
         run: |
           sudo apt-get install -y sshpass
           sshpass -p "${{ secrets.ARTIFACT_SFTP_PASSWORD }}" \
-            scp target/release/node ${{ secrets.ARTIFACT_SFTP_USERNAME }}@${{ secrets.ARTIFACT_SFTP_HOST }}:/home/${{ secrets.ARTIFACT_SFTP_USERNAME }}/node-${{ steps.get-branch.outputs.sha_short }}
+            scp -o StrictHostKeyChecking=no target/release/node ${{ secrets.ARTIFACT_SFTP_USERNAME }}@${{ secrets.ARTIFACT_SFTP_HOST }}:/home/${{ secrets.ARTIFACT_SFTP_USERNAME }}/node-${{ steps.get-branch.outputs.sha_short }}
 
       - name: Configure AWS credentials for S3 bucket with artifacts
         if: env.SECRET_ARTIFACT_S3BUCKET_NAME != '' && env.SECRET_ARTIFACT_S3BUCKET_AWS_ACCESS_KEY_ID != '' && env.SECRET_ARTIFACT_S3BUCKET_AWS_SECRET_ACCESS_KEY != ''
