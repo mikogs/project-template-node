@@ -1,4 +1,4 @@
-name: Build artifact and push docker image
+name: N01. Build artifact and push docker image
 
 on:
   pull_request:

@@ -1,4 +1,4 @@
-name: Attach asset to release
+name: N03. Attach asset to release
 
 on:
   release:

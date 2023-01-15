@@ -1,4 +1,4 @@
-name: Push docker image version tag
+name: N02. Push docker image version tag
 
 on:
   push:
