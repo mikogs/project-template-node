@@ -1,0 +1,40 @@
+name: Attach asset to release
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  attach-asset-to-release:
+    name: Attach asset to release
+    runs-on: ubuntu-22.04
+    env:
+      SECRET_ARTIFACT_SFTP_HOST: ${{ secrets.ARTIFACT_SFTP_HOST }}
+      SECRET_ARTIFACT_SFTP_USERNAME: ${{ secrets.ARTIFACT_SFTP_USERNAME }}
+      SECRET_ARTIFACT_SFTP_PASSWORD: ${{ secrets.ARTIFACT_SFTP_PASSWORD }}
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2.5.0
+
+      - name: Get branch name and commit SHA
+        id: get-branch
+        uses: ./.github/actions/get-branch
+
+      - name: Check if artifact SFTP details are set
+        if: env.SECRET_ARTIFACT_SFTP_HOST == '' || env.SECRET_ARTIFACT_SFTP_USERNAME == '' || env.SECRET_ARTIFACT_SFTP_PASSWORD == ''
+        run: |
+          echo "Artifact SFTP details are missing"
+          exit 1
+
+      - name: Download artifact from SFTP
+        run: |
+          sudo apt-get install -y sshpass
+          sshpass -p "${{ secrets.ARTIFACT_SFTP_PASSWORD }}" \
+            scp -o StrictHostKeyChecking=no ${{ secrets.ARTIFACT_SFTP_USERNAME }}@${{ secrets.ARTIFACT_SFTP_HOST }}:/home/${{ secrets.ARTIFACT_SFTP_USERNAME }}/node-${{ steps.get-branch.outputs.sha_short }} node
+
+      - name: Attach artifact to release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            node
