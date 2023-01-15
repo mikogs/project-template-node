@@ -31,6 +31,9 @@ jobs:
     name: Set status of the commit to 'success'
     runs-on: ubuntu-22.04
     steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2.5.0
+
       - name: Get branch name and commit SHA
         id: get-branch
         uses: ./.github/actions/get-branch
