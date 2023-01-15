@@ -8,6 +8,9 @@ outputs:
   sha_short:
     description: Commit short SHA
     value: ${{ steps.get_branch.outputs.sha_short }}
+  sha_long:
+    description: Commit long SHA
+    value: ${{ steps.get_branch.outputs.sha_long }}
 
 runs:
   using: composite
@@ -21,3 +24,4 @@ runs:
         echo "branch_name=$(echo ${HEAD_REF#refs/heads/} | tr / -)" >> $GITHUB_OUTPUT
         echo "tag_name=$(echo ${HEAD_REF#refs/tags/} | tr / -)" >> $GITHUB_OUTPUT
         echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        echo "sha_long=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
