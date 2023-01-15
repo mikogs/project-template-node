@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-artifact:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       SECRETS_ARTIFACT_S3BUCKET_NAME: ${{ secrets.ARTIFACT_S3BUCKET_NAME }}
       SECRETS_ARTIFACT_S3BUCKET_AWS_ACCESS_KEY_ID: ${{ secrets.ARTIFACT_S3BUCKET_AWS_ACCESS_KEY_ID }}
@@ -20,7 +20,10 @@ jobs:
         uses: ./.github/actions/get-branch
 
       - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
+        run: |
+          rustup toolchain install nightly
+          rustup component add rust-src --toolchain nightly
+          rustup default nightly
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v1

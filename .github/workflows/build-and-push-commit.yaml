@@ -9,6 +9,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  run-unit-tests:
+    name: Run unit tests
+    uses: ./.github/workflows/_run-unit-tests.yaml
+    secrets: inherit
   build-node-artifact:
     name: Build node artifact
     uses: ./.github/workflows/_build-node-artifact.yaml

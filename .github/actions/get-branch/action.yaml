@@ -19,4 +19,5 @@ runs:
         HEAD_REF: ${{ github.head_ref || github.ref }}
       run: |
         echo "branch_name=$(echo ${HEAD_REF#refs/heads/} | tr / -)" >> $GITHUB_OUTPUT
+        echo "tag_name=$(echo ${HEAD_REF#refs/tags/} | tr / -)" >> $GITHUB_OUTPUT
         echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
