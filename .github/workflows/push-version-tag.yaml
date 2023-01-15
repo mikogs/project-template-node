@@ -43,7 +43,6 @@ jobs:
             https://api.github.com/repos/mikogs/project-template-node/commits/${{ steps.get-branch.outputs.sha_long }}/status | jq -r .state > status_output
           
           cat status_output
-
           cat status_output | grep 'success'
 
       - name: Check if docker registry secrets are set
