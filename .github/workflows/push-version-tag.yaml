@@ -18,7 +18,7 @@ jobs:
       VAR_NODE_REGISTRY: ${{ vars.NODE_REGISTRY }}
       SECRET_NODE_REGISTRY_USERNAME: ${{ secrets.NODE_REGISTRY_USER }}
       SECRET_NODE_REGISTRY_PASSWORD: ${{ secrets.NODE_REGISTRY_PASS }}
-      SECRET_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      SECRET_CI_GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2.5.0
@@ -27,12 +27,11 @@ jobs:
         id: get-branch
         uses: ./.github/actions/get-branch
 
-      - name: Check if GITHUB_TOKEN is set
+      - name: Check if CI_GITHUB_TOKEN is set
+        if: env.SECRET_CI_GITHUB_TOKEN == ''
         run: |
-          if [[ -z "${{ env.SECRET_GITHUB_TOKEN }}" ]]; then
-            echo "GITHUB_TOKEN secret is required for this workflow to run"
-            exit 1
-          fi
+          echo "CI_GITHUB_TOKEN secret is required for this workflow to run"
+          exit 1
 
       - name: Wait for status check on the commit
         id: waitforstatuschecks
@@ -40,7 +39,7 @@ jobs:
         with:
           checkInterval: 20
         env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          CI_GITHUB_TOKEN: "${{ secrets.CI_GITHUB_TOKEN }}"
 
       - name: Check if all statuses for the commit are successful
         if: steps.id.waitforstatuschecks.outputs.status != 'success'
