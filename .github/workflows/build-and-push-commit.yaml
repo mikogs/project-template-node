@@ -25,3 +25,23 @@ jobs:
     name: Build node artifact
     uses: ./.github/workflows/_build-docker-image.yaml
     secrets: inherit
+
+  set-success-status:
+    needs: ['build-docker-image']
+    steps:
+      - name: Get branch name and commit SHA
+        id: get-branch
+        uses: ./.github/actions/get-branch
+
+      - name: Create status
+        run: |
+          curl --request POST \
+          --url https://api.github.com/repos/${{ github.repository }}/statuses/${{ steps.get-branch.outputs.sha_short }} \
+          --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+          --header 'content-type: application/json' \
+          --data '{
+            "state": "${{ github.event.workflow_run.conclusion }}",
+            "context": "build",
+            "target_url": "${{ github.event.workflow_run.html_url }}"
+            }' \
+          --fail
