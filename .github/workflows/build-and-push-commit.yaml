@@ -28,6 +28,7 @@ jobs:
 
   set-success-status:
     needs: ['build-docker-image']
+    name: Set status of the commit to 'success'
     runs-on: ubuntu-22.04
     steps:
       - name: Get branch name and commit SHA
