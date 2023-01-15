@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       VAR_NODE_REGISTRY: ${{ vars.NODE_REGISTRY }}
+      VAR_NODE_REPOSITORY: ${{ vars.NODE_REPOSITORY }}
       SECRET_NODE_REGISTRY_USERNAME: ${{ secrets.NODE_REGISTRY_USERNAME }}
       SECRET_NODE_REGISTRY_PASSWORD: ${{ secrets.NODE_REGISTRY_PASSWORD }}
     steps:
@@ -30,7 +31,7 @@ jobs:
           docker build --tag node:${{ steps.get-branch.outputs.sha_short }} -f docker/Dockerfile .
 
       - name: Login to docker registry
-        if: env.VAR_NODE_REGISTRY != '' && env.SECRET_NODE_REGISTRY_USERNAME != '' && env.SECRET_NODE_REGISTRY_PASSWORD != ''
+        if: env.VAR_NODE_REPOSITORY != '' && env.SECRET_NODE_REGISTRY_USERNAME != '' && env.SECRET_NODE_REGISTRY_PASSWORD != ''
         uses: docker/login-action@v1
         with:
           registry: ${{ vars.NODE_REGISTRY }}
@@ -40,5 +41,5 @@ jobs:
       - name: Push docker image to the repository
         if: env.VAR_NODE_REGISTRY != '' && env.SECRET_NODE_REGISTRY_USERNAME != '' && env.SECRET_NODE_REGISTRY_PASSWORD != ''
         run: |
-          docker tag node:${{ steps.get-branch.outputs.sha_short }} ${{ vars.NODE_REGISTRY }}:${{ steps.get-branch.outputs.sha_short }}
-          docker push ${{ vars.NODE_REGISTRY }}:${{ steps.get-branch.outputs.sha_short }}
+          docker tag node:${{ steps.get-branch.outputs.sha_short }} ${{ vars.VAR_NODE_REPOSITORY }}:${{ steps.get-branch.outputs.sha_short }}
+          docker push ${{ vars.VAR_NODE_REPOSITORY }}:${{ steps.get-branch.outputs.sha_short }}
