@@ -7,10 +7,13 @@ jobs:
   build-artifact:
     runs-on: ubuntu-22.04
     env:
-      SECRETS_ARTIFACT_S3BUCKET_NAME: ${{ secrets.ARTIFACT_S3BUCKET_NAME }}
-      SECRETS_ARTIFACT_S3BUCKET_AWS_ACCESS_KEY_ID: ${{ secrets.ARTIFACT_S3BUCKET_AWS_ACCESS_KEY_ID }}
-      SECRETS_ARTIFACT_S3BUCKET_AWS_SECRET_ACCESS_KEY: ${{ secrets.ARTIFACT_S3BUCKET_AWS_SECRET_ACCESS_KEY }}
-      SECRETS_ARTIFACT_S3BUCKET_AWS_REGION: ${{ secrets.ARTIFACT_S3BUCKET_AWS_REGION }}
+      SECRET_ARTIFACT_S3BUCKET_NAME: ${{ secrets.ARTIFACT_S3BUCKET_NAME }}
+      SECRET_ARTIFACT_S3BUCKET_AWS_ACCESS_KEY_ID: ${{ secrets.ARTIFACT_S3BUCKET_AWS_ACCESS_KEY_ID }}
+      SECRET_ARTIFACT_S3BUCKET_AWS_SECRET_ACCESS_KEY: ${{ secrets.ARTIFACT_S3BUCKET_AWS_SECRET_ACCESS_KEY }}
+      SECRET_ARTIFACT_S3BUCKET_AWS_REGION: ${{ secrets.ARTIFACT_S3BUCKET_AWS_REGION }}
+      SECRET_ARTIFACT_SFTP_HOST: ${{ secrets.ARTIFACT_SFTP_HOST }}
+      SECRET_ARTIFACT_SFTP_USERNAME: ${{ secrets.ARTIFACT_SFTP_USERNAME }}
+      SECRET_ARTIFACT_SFTP_PASSWORD: ${{ secrets.ARTIFACT_SFTP_PASSWORD }}
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2.5.0
@@ -30,21 +33,33 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+      - name: Check if artifact SFTP details are set
+        if: env.SECRET_ARTIFACT_SFTP_HOST == '' || env.SECRET_ARTIFACT_SFTP_USERNAME == '' || env.SECRET_ARTIFACT_SFTP_PASSWORD == ''
+        run: |
+          echo "Artifact SFTP details are missing"
+          exit 1
+
+      - name: Upload artifact to SFTP
+        run: |
+          sudo apt-get install -y sshpass
+          sshpass -p "${{ secrets.ARTIFACT_SFTP_PASSWORD }}" \
+            sftp target/release/node ${{ secrets.ARTIFACT_SFTP_USERNAME }}@${{ secrets.ARTIFACT_SFTP_HOST }}:/home/${{ secrets.ARTIFACT_SFTP_USERNAME }}/node-${{ steps.get-branch.outputs.sha_short }}
+
       - name: Configure AWS credentials for S3 bucket with artifacts
-        if: env.SECRETS_ARTIFACT_S3BUCKET_NAME != '' && env.SECRETS_ARTIFACT_S3BUCKET_AWS_ACCESS_KEY_ID != '' && env.SECRETS_ARTIFACT_S3BUCKET_AWS_SECRET_ACCESS_KEY != ''
+        if: env.SECRET_ARTIFACT_S3BUCKET_NAME != '' && env.SECRET_ARTIFACT_S3BUCKET_AWS_ACCESS_KEY_ID != '' && env.SECRET_ARTIFACT_S3BUCKET_AWS_SECRET_ACCESS_KEY != ''
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.SECRETS_ARTIFACT_S3BUCKET_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SECRETS_ARTIFACT_S3BUCKET_AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.SECRETS_ARTIFACT_S3BUCKET_AWS_REGION }}
+          aws-access-key-id: ${{ secrets.SECRET_ARTIFACT_S3BUCKET_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SECRET_ARTIFACT_S3BUCKET_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.SECRET_ARTIFACT_S3BUCKET_AWS_REGION }}
 
       - name: Copy release binary to S3 bucket with artifacts
-        if: env.SECRETS_ARTIFACT_S3BUCKET_NAME != '' && env.SECRETS_ARTIFACT_S3BUCKET_AWS_ACCESS_KEY_ID != '' && env.SECRETS_ARTIFACT_S3BUCKET_AWS_SECRET_ACCESS_KEY != ''
+        if: env.SECRET_ARTIFACT_S3BUCKET_NAME != '' && env.SECRET_ARTIFACT_S3BUCKET_AWS_ACCESS_KEY_ID != '' && env.SECRET_ARTIFACT_S3BUCKET_AWS_SECRET_ACCESS_KEY != ''
         shell: bash
         env:
           BINARY_DIR: target/release
           BINARY_FILE: node
-          S3BUCKET_URL: s3://${{ secrets.ARTIFACT_S3BUCKET_NAME }}/builds/node/commits/${{ steps.get-branch.outputs.sha_short }}/node-template
+          S3BUCKET_URL: s3://${{ secrets.ARTIFACT_S3BUCKET_NAME }}/builds/node/commits/${{ steps.get-branch.outputs.sha_short }}/node
           S3BUCKET_FILE: node-${{ steps.get-branch.outputs.sha_short }}.tar.gz
         run: |
           tar -cvzf ${{ env.S3BUCKET_FILE }} -C ${{ env.BINARY_DIR }} ${{ env.BINARY_FILE }}
