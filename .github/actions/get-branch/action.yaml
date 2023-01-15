@@ -5,6 +5,9 @@ outputs:
   branch_name:
     description: Branch name
     value: ${{ steps.get_branch.outputs.branch_name }}
+  tag_name:
+    description: Tag name
+    value: ${{ steps.get_branch.outputs.tag_name }}
   sha_short:
     description: Commit short SHA
     value: ${{ steps.get_branch.outputs.sha_short }}

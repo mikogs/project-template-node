@@ -61,5 +61,5 @@ jobs:
       - name: Push docker image to the repository
         run: |
           docker pull ${{ vars.NODE_REPOSITORY }}:${{ steps.get-branch.outputs.sha_short }}
-          docker tag ${{ vars.NODE_REPOSITORY }}:${{ steps.get-branch.outputs.sha_short }} ${{ vars.NODE_REPOSITORY }}:${{ steps.get-branch.outputs.branch_name }}
-          docker push ${{ vars.NODE_REPOSITORY }}:${{ steps.get-branch.outputs.branch_name }}
+          docker tag ${{ vars.NODE_REPOSITORY }}:${{ steps.get-branch.outputs.sha_short }} ${{ vars.NODE_REPOSITORY }}:${{ steps.get-branch.outputs.tag_name }}
+          docker push ${{ vars.NODE_REPOSITORY }}:${{ steps.get-branch.outputs.tag_name }}
