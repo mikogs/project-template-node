@@ -2,7 +2,10 @@ name: Push docker image version tag
 
 on:
   push:
+    branches-ignore: 
+      - '*'
     tags:
+      - 'v*'
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
