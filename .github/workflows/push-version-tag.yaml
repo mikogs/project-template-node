@@ -28,10 +28,11 @@ jobs:
         uses: ./.github/actions/get-branch
 
       - name: Check if GITHUB_TOKEN is set
-        if: env.SECRET_GITHUB_TOKEN == ''
         run: |
-          echo "GITHUB_TOKEN secret is required for this workflow to run"
-          exit 1
+          if [[ -z "${{ env.SECRET_GITHUB_TOKEN }}" ]]; then
+            echo "GITHUB_TOKEN secret is required for this workflow to run"
+            exit 1
+          fi
 
       - name: Wait for status check on the commit
         id: waitforstatuschecks
