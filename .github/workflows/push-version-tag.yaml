@@ -34,24 +34,22 @@ jobs:
           echo "CI_GITHUB_TOKEN secret is required for this workflow to run"
           exit 1
 
-      - name: Wait for status check on the commit
+      - name: Check if commit status is 'success'
         run: |
-          curl \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.CI_GITHUB_TOKEN }}"\
+          STATE=$(curl --http1.1 -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.CI_GITHUB_TOKEN }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
-            https://api.github.com/repos/mikogs/project-template-node/commits/${{ steps.get-branch.outputs.sha_short }}/status
-
-      - name: Check if all statuses for the commit are successful
-        if: steps.id.waitforstatuschecks.outputs.status != 'success'
-        run: |
-          echo "All statuses for commit ${{ steps.get-branch.outputs.sha_short }} must be successful"
-          exit 1
+            https://api.github.com/repos/mikogs/project-template-node/commits/${{ steps.get-branch.outputs.sha_long }}/status | jq -r .state)
+          
+          if [[ "${STATE}" != "success" ]]; then
+            echo "Commit does not have a state of 'success'";
+            exit 1;
+          fi
 
       - name: Check if docker registry secrets are set
         if: env.VAR_NODE_REPOSITORY == '' || env.SECRET_NODE_REGISTRY_USERNAME == '' || env.SECRET_NODE_REGISTRY_PASSWORD == ''
         run: |
-          echo "docker registry secrets are required for this workflow to run"
+          echo "Docker registry secrets are required for this workflow to run"
           exit 1
 
       - name: Login to docker registry
