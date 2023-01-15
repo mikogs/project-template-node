@@ -56,7 +56,7 @@ jobs:
       - name: Login to docker registry
         uses: docker/login-action@v1
         with:
-          registry: ${{ vars.NODE_REGISTRY }}
+          registry: ${{ contains(vars.NODE_REGISTRY, 'https') && vars.NODE_REGISTRY || '' }}
           username: ${{ secrets.NODE_REGISTRY_USERNAME }}
           password: ${{ secrets.NODE_REGISTRY_PASSWORD }}
 
