@@ -34,8 +34,8 @@ jobs:
         uses: docker/login-action@v1
         with:
           registry: ${{ vars.NODE_REGISTRY }}
-          username: ${{ secrets.SECRET_NODE_REGISTRY_USERNAME }}
-          password: ${{ secrets.SECRET_NODE_REGISTRY_PASSWORD }}
+          username: ${{ secrets.NODE_REGISTRY_USERNAME }}
+          password: ${{ secrets.NODE_REGISTRY_PASSWORD }}
 
       - name: Push docker image to the repository
         if: env.VAR_NODE_REGISTRY != '' && env.SECRET_NODE_REGISTRY_USERNAME != '' && env.SECRET_NODE_REGISTRY_PASSWORD != ''
