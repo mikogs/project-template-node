@@ -1,0 +1,19 @@
+name: _Run unit tests
+
+on:
+  workflow_call:
+
+jobs:
+  build-artifact:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2.5.0
+
+      - name: Get branch name and commit SHA
+        id: get-branch
+        uses: ./.github/actions/get-branch
+
+      - name: Run unit tests
+        run: |
+          echo "Running unit tests"

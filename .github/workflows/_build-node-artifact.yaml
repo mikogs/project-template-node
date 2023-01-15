@@ -1,0 +1,51 @@
+name: _Build node binary
+
+on:
+  workflow_call:
+
+jobs:
+  build-artifact:
+    runs-on: ubuntu-22.04
+    env:
+      SECRETS_ARTIFACT_S3BUCKET_NAME: ${{ secrets.ARTIFACT_S3BUCKET_NAME }}
+      SECRETS_ARTIFACT_S3BUCKET_AWS_ACCESS_KEY_ID: ${{ secrets.ARTIFACT_S3BUCKET_AWS_ACCESS_KEY_ID }}
+      SECRETS_ARTIFACT_S3BUCKET_AWS_SECRET_ACCESS_KEY: ${{ secrets.ARTIFACT_S3BUCKET_AWS_SECRET_ACCESS_KEY }}
+      SECRETS_ARTIFACT_S3BUCKET_AWS_REGION: ${{ secrets.ARTIFACT_S3BUCKET_AWS_REGION }}
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2.5.0
+
+      - name: Get branch name and commit SHA
+        id: get-branch
+        uses: ./.github/actions/get-branch
+
+      - name: Build binary
+        run: cargo build --release
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: node
+          path: target/release/node
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Configure AWS credentials for S3 bucket with artifacts
+        if: env.SECRETS_ARTIFACT_S3BUCKET_NAME != '' && env.SECRETS_ARTIFACT_S3BUCKET_AWS_ACCESS_KEY_ID != '' && env.SECRETS_ARTIFACT_S3BUCKET_AWS_SECRET_ACCESS_KEY != ''
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SECRETS_ARTIFACT_S3BUCKET_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SECRETS_ARTIFACT_S3BUCKET_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.SECRETS_ARTIFACT_S3BUCKET_AWS_REGION }}
+
+      - name: Copy release binary to S3 bucket with artifacts
+        if: env.SECRETS_ARTIFACT_S3BUCKET_NAME != '' && env.SECRETS_ARTIFACT_S3BUCKET_AWS_ACCESS_KEY_ID != '' && env.SECRETS_ARTIFACT_S3BUCKET_AWS_SECRET_ACCESS_KEY != ''
+        shell: bash
+        env:
+          BINARY_DIR: target/release
+          BINARY_FILE: node
+          S3BUCKET_URL: s3://${{ secrets.ARTIFACT_S3BUCKET_NAME }}/builds/node/commits/${{ steps.get-branch.outputs.sha_short }}/node-template
+          S3BUCKET_FILE: node-${{ steps.get-branch.outputs.sha_short }}.tar.gz
+        run: |
+          tar -cvzf ${{ env.S3BUCKET_FILE }} -C ${{ env.BINARY_DIR }} ${{ env.BINARY_FILE }}
+          aws s3 cp ${{ env.S3BUCKET_FILE }} ${{ env.S3BUCKET_URL }}/${{ env.S3BUCKET_FILE }}

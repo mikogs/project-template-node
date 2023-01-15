@@ -1,0 +1,65 @@
+name: Push docker image version tag
+
+on:
+  push:
+    branches-ignore: 
+      - '*'
+    tags:
+      - 'v*'
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  push-version-tag:
+    runs-on: ubuntu-22.04
+    env:
+      VAR_NODE_REGISTRY: ${{ vars.NODE_REGISTRY }}
+      VAR_NODE_REPOSITORY: ${{ vars.NODE_REPOSITORY }}
+      SECRET_NODE_REGISTRY_USERNAME: ${{ secrets.NODE_REGISTRY_USERNAME }}
+      SECRET_NODE_REGISTRY_PASSWORD: ${{ secrets.NODE_REGISTRY_PASSWORD }}
+      SECRET_CI_GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2.5.0
+
+      - name: Get branch name and commit SHA
+        id: get-branch
+        uses: ./.github/actions/get-branch
+
+      - name: Check if CI_GITHUB_TOKEN is set
+        if: env.SECRET_CI_GITHUB_TOKEN == ''
+        run: |
+          echo "CI_GITHUB_TOKEN secret is required for this workflow to run"
+          exit 1
+
+      - name: Check if commit status is 'success'
+        shell: bash
+        run: |
+          curl --http1.1 -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.CI_GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/mikogs/project-template-node/commits/${{ steps.get-branch.outputs.sha_long }}/status | jq -r .state > status_output
+          
+          cat status_output
+          cat status_output | grep 'success'
+
+      - name: Check if docker registry secrets are set
+        if: env.VAR_NODE_REPOSITORY == '' || env.SECRET_NODE_REGISTRY_USERNAME == '' || env.SECRET_NODE_REGISTRY_PASSWORD == ''
+        run: |
+          echo "Docker registry secrets are required for this workflow to run"
+          exit 1
+
+      - name: Login to docker registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ vars.NODE_REGISTRY }}
+          username: ${{ secrets.NODE_REGISTRY_USERNAME }}
+          password: ${{ secrets.NODE_REGISTRY_PASSWORD }}
+
+      - name: Push docker image to the repository
+        run: |
+          docker pull ${{ vars.NODE_REPOSITORY }}:{{ steps.get-branch.outputs.sha_short }}
+          docker tag ${{ vars.NODE_REPOSITORY }}:{{ steps.get-branch.outputs.sha_short }} ${{ vars.NODE_REPOSITORY }}:{{ steps.get-branch.outputs.branch_name }}
+          docker push ${{ vars.NODE_REPOSITORY }}:{{ steps.get-branch.outputs.branch_name }}
