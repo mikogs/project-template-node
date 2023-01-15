@@ -16,8 +16,8 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       VAR_NODE_REGISTRY: ${{ vars.NODE_REGISTRY }}
-      SECRET_NODE_REGISTRY_USERNAME: ${{ secrets.NODE_REGISTRY_USER }}
-      SECRET_NODE_REGISTRY_PASSWORD: ${{ secrets.NODE_REGISTRY_PASS }}
+      SECRET_NODE_REGISTRY_USERNAME: ${{ secrets.NODE_REGISTRY_USERNAME }}
+      SECRET_NODE_REGISTRY_PASSWORD: ${{ secrets.NODE_REGISTRY_PASSWORD }}
       SECRET_CI_GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
     steps:
       - name: Check out the repo
