@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM ubuntu:22.04
 
 RUN mkdir /node
 WORKDIR /node
