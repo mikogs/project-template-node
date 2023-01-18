@@ -1,20 +1,49 @@
-name: _Deploy to devnet
+name: N04. Deploy image tag to testenv
 
 on:
-  workflow_call:
+  workflow_dispatch:
+    inputs:
+      image-tag:
+        type: string
+        description: Image tag to deploy
+
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
 
 jobs:
-  deploy-to-devenv:
+  deploy-to-testenv:
     runs-on: ubuntu-22.04
     env:
       VAR_NODE_REPOSITORY: ${{ vars.NODE_REPOSITORY }}
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2.5.0
+        with:
+          ref: "${{ github.event.inputs.image-tag }}"
 
       - name: Get branch name and commit SHA
         id: get-branch
         uses: ./.github/actions/get-branch
+
+
+      - name: Check if commit status is 'success'
+        shell: bash
+        run: |
+          curl --http1.1 -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.CI_GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/mikogs/project-template-node/commits/${{ steps.get-branch.outputs.sha_long }}/status | jq -r .state > status_output
+          
+          cat status_output
+          cat status_output | grep 'success'
+
+      - name: Pull the image to check if it exists
+        env:
+          DOCKER_IMAGE: ${{ vars.NODE_REPOSITORY }}:${{ github.event.inputs.image-tag }}
+        run: |
+          docker pull ${{ DOCKER_IMAGE }}
 
 
       - name: GIT | Checkout project-template-apps-node repository
@@ -29,11 +58,11 @@ jobs:
         with:
           kustomize-version: "3.8.6"
 
-      - name: Replace image tag for devenv
+      - name: Replace image tag for testenv
         env:
-          DOCKER_IMAGE: ${{ vars.NODE_REPOSITORY }}:${{ steps.get-branch.outputs.sha_short }}
+          DOCKER_IMAGE: ${{ vars.NODE_REPOSITORY }}:${{ github.event.inputs.image-tag }}
         run: |
-          cd project-template-apps-node/overlays/devenv/
+          cd project-template-apps-node/overlays/testenv/
           for r in region region2 region3; do
             cd $r
             kustomize edit set image "node-image-placeholder=${DOCKER_IMAGE}"
@@ -45,7 +74,7 @@ jobs:
         with:
           author_name: project-template
           author_email: project-template@f0x.pl
-          message: "Update devenv node docker image tag to: ${{ steps.get-branch.outputs.sha_short }}"
+          message: "Update testenv node docker image tag to: ${{ github.event.inputs.image-tag }}"
           add: "*.yaml"
           cwd: "project-template-apps-node"
           branch: master
@@ -61,18 +90,18 @@ jobs:
           path: "project-template-envs"
           submodules: "recursive"
 
-      - name: Update devenv/node submodule
+      - name: Update testenv/node submodule
         run: |
           cd project-template-envs
-          git submodule update --remote devenv/node
+          git submodule update --remote testenv/node
       
       - name: Commit changes to project-template-envs repository
         uses: EndBug/add-and-commit@v5.1.0
         with:
           author_name: project-template
           author_email: project-template@f0x.pl
-          message: "Update devenv node docker image tag to: ${{ steps.get-branch.outputs.sha_short }}"
-          add: "devenv/node"
+          message: "Update testenv node docker image tag to: ${{ github.event.inputs.image-tag }}"
+          add: "testenv/node"
           cwd: "project-template-envs"
           branch: master
         env:
