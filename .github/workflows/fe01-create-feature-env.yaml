@@ -1,4 +1,4 @@
-name: Create feature environment
+name: FE01. Create feature environment
 
 on:
   pull_request:
