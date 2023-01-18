@@ -1,4 +1,4 @@
-name: Create feature environment
+name: FE01. Create feature environment
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   create-feature-env:
-    if: github.event.action == 'labelled' && github.event.label.name == 'create-feature-env'
+    if: github.event.action == 'labeled' && github.event.label.name == 'create-feature-env'
     runs-on: ubuntu-22.04
     env:
       VAR_NODE_REPOSITORY: ${{ vars.NODE_REPOSITORY }}
@@ -34,6 +34,7 @@ jobs:
           DOCKER_IMAGE: ${{ vars.NODE_REPOSITORY }}:${{ steps.get-branch.outputs.sha_short }}
         run: |
           docker pull ${DOCKER_IMAGE}
+
 
       - name: Checkout project-template-envs repository
         uses: actions/checkout@master
@@ -64,4 +65,56 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
 
-      # TODO: kubectl apply -f project-template-envs/featureenvs/${{ steps.get-branch.outputs.branch_name }}
+
+      - name: Checkout project-template-apps-argocd repository
+        uses: actions/checkout@master
+        with:
+          repository: mikogs/project-template-apps-argocd
+          token: ${{ secrets.CI_GITHUB_TOKEN }}
+          path: "project-template-apps-argocd"
+          submodules: "recursive"
+
+      - name: Create featureenv in project-template-apps-argocd
+        env:
+          DOCKER_IMAGE: ${{ vars.NODE_REPOSITORY }}:${{ steps.get-branch.outputs.sha_short }}
+        run: |
+          cd project-template-apps-argocd
+          ./create-feature-env.sh ${{ steps.get-branch.outputs.branch_name }}
+
+      - name: Commit changes to project-template-apps-argocd repository
+        uses: EndBug/add-and-commit@v5.1.0
+        with:
+          author_name: project-template
+          author_email: project-template@f0x.pl
+          message: "Create featureenv ${{ steps.get-branch.outputs.branch_name }} with node docker image tag: ${{ steps.get-branch.outputs.sha_short }}"
+          add: "*.yaml"
+          cwd: "project-template-apps-argocd"
+          branch: master
+        env:
+          GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
+
+
+      - name: Checkout project-template-envs repository
+        uses: actions/checkout@master
+        with:
+          repository: mikogs/project-template-envs
+          token: ${{ secrets.CI_GITHUB_TOKEN }}
+          path: "project-template-envs"
+          submodules: "recursive"
+
+      - name: Update devenv/argocd submodule
+        run: |
+          cd project-template-envs
+          git submodule update --remote devenv/argocd
+      
+      - name: Commit changes to project-template-envs repository
+        uses: EndBug/add-and-commit@v5.1.0
+        with:
+          author_name: project-template
+          author_email: project-template@f0x.pl
+          message: "Create featureenv ${{ steps.get-branch.outputs.branch_name }} with node docker image tag: ${{ steps.get-branch.outputs.sha_short }}"
+          add: "devenv/argocd"
+          cwd: "project-template-envs"
+          branch: master
+        env:
+          GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
