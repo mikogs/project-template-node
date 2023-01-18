@@ -63,10 +63,8 @@ jobs:
 
       - name: Update devenv/node submodule
         run: |
-          cd project-template-envs/devenv/node
-          git config pull.rebase false
-          git config pull.ff true
-          git pull
+          cd project-template-envs
+          git submodule update --remote devenv/node
       
       #- name: Commit changes to project-template-envs repository
       #  uses: EndBug/add-and-commit@v5.1.0
@@ -74,7 +72,7 @@ jobs:
       #    author_name: project-template
       #    author_email: project-template@f0x.pl
       #    message: "Update devnet node docker image tag to: ${{ steps.get-branch.outputs.sha_short }}"
-      #    add: ".gitmodules"
+      #    add: "devenv/node"
       #    cwd: "project-template-envs"
       #    branch: master
       #  env:
