@@ -43,7 +43,7 @@ jobs:
         env:
           DOCKER_IMAGE: ${{ vars.NODE_REPOSITORY }}:${{ github.event.inputs.image-tag }}
         run: |
-          docker pull ${{ env.DOCKER_IMAGE }}
+          docker pull ${ DOCKER_IMAGE }
 
 
       - name: GIT | Checkout project-template-apps-node repository
@@ -65,7 +65,7 @@ jobs:
           cd project-template-apps-node/overlays/testenv/
           for r in region region2 region3; do
             cd $r
-            kustomize edit set image "node-image-placeholder=${env.DOCKER_IMAGE}"
+            kustomize edit set image "node-image-placeholder=${DOCKER_IMAGE}"
             cd ..
           done
 
