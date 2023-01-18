@@ -35,6 +35,7 @@ jobs:
         run: |
           docker pull ${DOCKER_IMAGE}
 
+
       - name: Checkout project-template-envs repository
         uses: actions/checkout@master
         with:
@@ -64,14 +65,30 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
 
-      - name: Add argocd application
-        env:
-          NODE_SSH_PRIVATE_KEY: ${{ secrets.NODE_SSH_PRIVATE_KEY }}
-          NODE_SSH_USERNAME: ${{ secrets.NODE_SSH_USERNAME }}
-          NODE_SSH_HOSTNAME: ${{ secrets.NODE_SSH_HOSTNAME }}
-        run: |
-          echo "$NODE_SSH_PRIVATE_KEY" > node.pem
-          scp -i node.pem $NODE_SSH_USERNAME@$NODE_SSH_HOSTNAME:/tmp/featureenv-${{ steps.get-branch.outputs.branch_name }}-argoapp.yaml
-          echo "kubectl apply -f /tmp/featureenv-${{ steps.get-branch.outputs.branch_name }}-argoapp.yaml" | ssh -i node.pem -l $NODE_SSH_USERNAME $NODE_SSH_HOSTNAME
 
-      # TODO: kubectl apply -f project-template-envs/featureenvs/${{ steps.get-branch.outputs.branch_name }}
+      - name: Checkout project-template-apps-argocd repository
+        uses: actions/checkout@master
+        with:
+          repository: mikogs/project-template-apps-argocd
+          token: ${{ secrets.CI_GITHUB_TOKEN }}
+          path: "project-template-apps-argocd"
+          submodules: "recursive"
+
+      - name: Create featureenv in project-template-apps-argocd
+        env:
+          DOCKER_IMAGE: ${{ vars.NODE_REPOSITORY }}:${{ steps.get-branch.outputs.sha_short }}
+        run: |
+          cd project-template-apps-argocd
+          ./create-feature-env.sh ${{ steps.get-branch.outputs.branch_name }}
+
+      - name: Commit changes to project-template-apps-argocd repository
+        uses: EndBug/add-and-commit@v5.1.0
+        with:
+          author_name: project-template
+          author_email: project-template@f0x.pl
+          message: "Create featureenv ${{ steps.get-branch.outputs.branch_name }} with node docker image tag: ${{ steps.get-branch.outputs.sha_short }}"
+          add: "*.yaml"
+          cwd: "project-template-apps-argocd"
+          branch: master
+        env:
+          GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
