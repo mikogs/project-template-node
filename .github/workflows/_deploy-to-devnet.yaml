@@ -1,0 +1,78 @@
+name: _Deploy to devnet
+
+on:
+  workflow_call:
+
+jobs:
+  deploy-to-devnet:
+    runs-on: ubuntu-22.04
+    env:
+      VAR_NODE_REPOSITORY: ${{ vars.NODE_REPOSITORY }}
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2.5.0
+
+      - name: Get branch name and commit SHA
+        id: get-branch
+        uses: ./.github/actions/get-branch
+
+
+      - name: GIT | Checkout project-template-apps-node repository
+        uses: actions/checkout@master
+        with:
+          repository: mikogs/project-template-apps-node
+          token: ${{ secrets.CI_GITHUB_TOKEN }}
+          path: "project-template-apps-node"
+
+      - name: Init kustomize
+        uses: imranismail/setup-kustomize@v1
+        with:
+          kustomize-version: "3.8.6"
+
+      - name: Replace image tag for devenv
+        env:
+          DOCKER_IMAGE: ${{ vars.NODE_REPOSITORY }}:${{ steps.get-branch.outputs.sha_short }}
+        run: |
+          cd project-template-apps-node/overlays/devenv/
+          for r in region region2 region3; do
+            cd $r
+            kustomize edit set image "node-image-placeholder=${DOCKER_IMAGE}"
+            cd ..
+          done
+
+      - name: Commit changes to project-template-apps-node repository
+        uses: EndBug/add-and-commit@v5.1.0
+        with:
+          author_name: project-template
+          author_email: project-template@f0x.pl
+          message: "Update devnet node docker image tag to: ${{ steps.vars.outputs.sha_short }}"
+          add: "*.yaml"
+          cwd: "project-template-apps-node"
+          branch: master
+        env:
+          GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
+
+
+      - name: Checkout project-template-envs repository
+        uses: actions/checkout@master
+        with:
+          repository: mikogs/project-template-envs
+          token: ${{ secrets.CI_GITHUB_TOKEN }}
+          path: "project-template-envs"
+
+      - name: Update devenv/node submodule
+        run: |
+          cd project-template-envs/devenv/node
+          git pull
+      
+      - name: Commit changes to project-template-envs repository
+        uses: EndBug/add-and-commit@v5.1.0
+        with:
+          author_name: project-template
+          author_email: project-template@f0x.pl
+          message: "Update devnet node docker image tag to: ${{ steps.vars.outputs.sha_short }}"
+          add: ".gitmodules"
+          cwd: "project-template-envs"
+          branch: master
+        env:
+          GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
