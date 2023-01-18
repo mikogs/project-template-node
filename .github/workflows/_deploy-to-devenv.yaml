@@ -64,6 +64,7 @@ jobs:
       - name: Update devenv/node submodule
         run: |
           cd project-template-envs/devenv/node
+          git config pull.rebase true
           git pull
       
       - name: Commit changes to project-template-envs repository
