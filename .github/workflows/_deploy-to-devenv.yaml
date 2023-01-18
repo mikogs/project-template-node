@@ -64,17 +64,18 @@ jobs:
       - name: Update devenv/node submodule
         run: |
           cd project-template-envs/devenv/node
-          git config pull.rebase true
+          git config pull.rebase false
+          git config pull.ff true
           git pull
       
-      - name: Commit changes to project-template-envs repository
-        uses: EndBug/add-and-commit@v5.1.0
-        with:
-          author_name: project-template
-          author_email: project-template@f0x.pl
-          message: "Update devnet node docker image tag to: ${{ steps.get-branch.outputs.sha_short }}"
-          add: ".gitmodules"
-          cwd: "project-template-envs"
-          branch: master
-        env:
-          GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
+      #- name: Commit changes to project-template-envs repository
+      #  uses: EndBug/add-and-commit@v5.1.0
+      #  with:
+      #    author_name: project-template
+      #    author_email: project-template@f0x.pl
+      #    message: "Update devnet node docker image tag to: ${{ steps.get-branch.outputs.sha_short }}"
+      #    add: ".gitmodules"
+      #    cwd: "project-template-envs"
+      #    branch: master
+      #  env:
+      #    GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
