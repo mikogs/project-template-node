@@ -51,6 +51,7 @@ jobs:
             https://api.github.com/repos/mikogs/project-template-node/statuses/${{ steps.get-branch.outputs.sha_long }}
 
   deploy-to-devenv:
+    if: github.ref_name == 'master'
     needs: ['set-success-status']
     name: Deploy to devenv
     uses: ./.github/workflows/_deploy-to-devenv.yaml
