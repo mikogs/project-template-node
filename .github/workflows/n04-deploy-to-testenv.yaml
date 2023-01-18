@@ -43,7 +43,7 @@ jobs:
         env:
           DOCKER_IMAGE: ${{ vars.NODE_REPOSITORY }}:${{ github.event.inputs.image-tag }}
         run: |
-          docker pull ${ DOCKER_IMAGE }
+          docker pull ${DOCKER_IMAGE}
 
 
       - name: GIT | Checkout project-template-apps-node repository
