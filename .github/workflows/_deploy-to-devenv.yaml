@@ -45,7 +45,7 @@ jobs:
         with:
           author_name: project-template
           author_email: project-template@f0x.pl
-          message: "Update devnet node docker image tag to: ${{ steps.vars.outputs.sha_short }}"
+          message: "Update devnet node docker image tag to: ${{ steps.get-branch.outputs.sha_short }}"
           add: "*.yaml"
           cwd: "project-template-apps-node"
           branch: master
@@ -59,6 +59,7 @@ jobs:
           repository: mikogs/project-template-envs
           token: ${{ secrets.CI_GITHUB_TOKEN }}
           path: "project-template-envs"
+          submodules: "recursive"
 
       - name: Update devenv/node submodule
         run: |
@@ -70,7 +71,7 @@ jobs:
         with:
           author_name: project-template
           author_email: project-template@f0x.pl
-          message: "Update devnet node docker image tag to: ${{ steps.vars.outputs.sha_short }}"
+          message: "Update devnet node docker image tag to: ${{ steps.get-branch.outputs.sha_short }}"
           add: ".gitmodules"
           cwd: "project-template-envs"
           branch: master
