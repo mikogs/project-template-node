@@ -6,7 +6,7 @@ on:
 
 jobs:
   create-feature-env:
-    if: github.event.action == 'labelled' && github.event.label.name == 'create-feature-env'
+    if: github.event.action == 'labeled' && github.event.label.name == 'create-feature-env'
     runs-on: ubuntu-22.04
     env:
       VAR_NODE_REPOSITORY: ${{ vars.NODE_REPOSITORY }}
