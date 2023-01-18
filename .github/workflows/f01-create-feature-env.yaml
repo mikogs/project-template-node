@@ -64,4 +64,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
 
+      - name: Add argocd application
+        env:
+          NODE_SSH_PRIVATE_KEY: ${{ secrets.NODE_SSH_PRIVATE_KEY }}
+          NODE_SSH_USERNAME: ${{ secrets.NODE_SSH_USERNAME }}
+          NODE_SSH_HOSTNAME: ${{ secrets.NODE_SSH_HOSTNAME }}
+        run: |
+          echo "$NODE_SSH_PRIVATE_KEY" > node.pem
+          scp -i node.pem $NODE_SSH_USERNAME@$NODE_SSH_HOSTNAME:/tmp/featureenv-${{ steps.get-branch.outputs.branch_name }}-argoapp.yaml
+          echo "kubectl apply -f /tmp/featureenv-${{ steps.get-branch.outputs.branch_name }}-argoapp.yaml" | ssh -i node.pem -l $NODE_SSH_USERNAME $NODE_SSH_HOSTNAME
+
       # TODO: kubectl apply -f project-template-envs/featureenvs/${{ steps.get-branch.outputs.branch_name }}
