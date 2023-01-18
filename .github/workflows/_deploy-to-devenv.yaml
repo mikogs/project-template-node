@@ -66,14 +66,14 @@ jobs:
           cd project-template-envs
           git submodule update --remote devenv/node
       
-      #- name: Commit changes to project-template-envs repository
-      #  uses: EndBug/add-and-commit@v5.1.0
-      #  with:
-      #    author_name: project-template
-      #    author_email: project-template@f0x.pl
-      #    message: "Update devnet node docker image tag to: ${{ steps.get-branch.outputs.sha_short }}"
-      #    add: "devenv/node"
-      #    cwd: "project-template-envs"
-      #    branch: master
-      #  env:
-      #    GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
+      - name: Commit changes to project-template-envs repository
+        uses: EndBug/add-and-commit@v5.1.0
+        with:
+          author_name: project-template
+          author_email: project-template@f0x.pl
+          message: "Update devnet node docker image tag to: ${{ steps.get-branch.outputs.sha_short }}"
+          add: "devenv/node"
+          cwd: "project-template-envs"
+          branch: master
+        env:
+          GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
