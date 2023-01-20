@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [labeled]
 
+concurrency:
+  group: feature-env
+  cancel-in-progress: false
+
 jobs:
   create-feature-env:
     if: github.event.action == 'labeled' && github.event.label.name == 'create-feature-env'
@@ -11,6 +15,13 @@ jobs:
     env:
       VAR_NODE_REPOSITORY: ${{ vars.NODE_REPOSITORY }}
     steps:
+      - name: Debug
+        run: |
+          echo "github.ref ${{ github.ref }}"
+          echo "github.head_ref ${{ github.head_ref }}"
+          echo "sha_short=$(git rev-parse --short HEAD)"
+          echo "sha_long=$(git rev-parse HEAD)"
+
       - name: Check out the repo
         uses: actions/checkout@v2.5.0
 

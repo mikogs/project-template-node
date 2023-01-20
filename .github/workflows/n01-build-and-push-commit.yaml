@@ -12,6 +12,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  debug:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Debug
+        run: |
+          echo "github.ref ${{ github.ref }}"
+          echo "github.head_ref ${{ github.head_ref }}"
+          echo "sha_short=$(git rev-parse --short HEAD)"
+          echo "sha_long=$(git rev-parse HEAD)"
+
   run-unit-tests:
     name: Run unit tests
     uses: ./.github/workflows/_run-unit-tests.yaml
