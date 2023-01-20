@@ -15,6 +15,9 @@ jobs:
   debug:
     runs-on: ubuntu-22.04
     steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2.5.0
+
       - name: Debug
         run: |
           echo "github.ref ${{ github.ref }}"
