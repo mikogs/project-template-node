@@ -71,7 +71,7 @@ jobs:
           author_name: project-template
           author_email: project-template@f0x.pl
           message: "Delete featureenv ${{ steps.get-branch.outputs.branch_name }}"
-          add: "featureenvs"
+          add: "['featureenvs', 'devenv/argocd']"
           cwd: "project-template-envs"
           branch: master
         env:

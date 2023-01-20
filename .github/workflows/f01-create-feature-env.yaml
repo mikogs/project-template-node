@@ -90,7 +90,7 @@ jobs:
           author_name: project-template
           author_email: project-template@f0x.pl
           message: "Create featureenv ${{ steps.get-branch.outputs.branch_name }} with node docker image tag: ${{ steps.get-branch.outputs.sha_short }}"
-          add: "featureenvs"
+          add: "['featureenvs', 'devenv/argocd']"
           cwd: "project-template-envs"
           branch: master
         env:
