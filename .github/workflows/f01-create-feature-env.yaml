@@ -18,13 +18,6 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2.5.0
 
-      - name: Debug
-        run: |
-          echo "github.ref ${{ github.ref }}"
-          echo "github.head_ref ${{ github.head_ref }}"
-          echo "sha_short=$(git rev-parse --short HEAD)"
-          echo "sha_long=$(git rev-parse HEAD)"
-
       - name: Get branch name and commit SHA
         id: get-branch
         uses: ./.github/actions/get-branch
