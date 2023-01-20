@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [labeled]
 
+concurrency:
+  group: feature-env
+  cancel-in-progress: false
+
 jobs:
   create-feature-env:
     if: github.event.action == 'labeled' && github.event.label.name == 'create-feature-env'
@@ -86,7 +90,7 @@ jobs:
           author_name: project-template
           author_email: project-template@f0x.pl
           message: "Create featureenv ${{ steps.get-branch.outputs.branch_name }} with node docker image tag: ${{ steps.get-branch.outputs.sha_short }}"
-          add: "featureenvs"
+          add: '.'
           cwd: "project-template-envs"
           branch: master
         env:

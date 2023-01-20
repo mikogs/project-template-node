@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [labeled, closed]
 
+concurrency:
+  group: feature-env
+  cancel-in-progress: false
+
 jobs:
   create-feature-env:
     if: >
@@ -67,7 +71,7 @@ jobs:
           author_name: project-template
           author_email: project-template@f0x.pl
           message: "Delete featureenv ${{ steps.get-branch.outputs.branch_name }}"
-          add: "featureenvs"
+          add: '.'
           cwd: "project-template-envs"
           branch: master
         env:
